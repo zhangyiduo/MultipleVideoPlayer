@@ -8,9 +8,7 @@ def flick(x):
 
 frame_rate = 30 # the rate of video
 videoNames = ['shake.avi', # video path and name
-              '4.mp4',
-              '4.mp4',
-              '4.mp4']
+              'shake.avi']
 winNums = len(videoNames) # number of video to display -> it should not be greater than 4
 
 if winNums > 4:
@@ -35,7 +33,6 @@ for file in videoNames:
 print(totalFrames)
 frameIndex = [0 for i in range(winNums)]
 winIndex = 0
-preWinIndex = 0
 images = []
 trackBarNames = []
 
@@ -58,8 +55,8 @@ while True:
         maxWidth = 0
         maxHight = 0
         for i in range(len(frameIndex)):
-            if (frameIndex[i] == (totalFrames[i] - 1)):
-                frameIndex[i] = 0
+            if (frameIndex[i] > (totalFrames[i] - 1)):
+                frameIndex[i] = int(totalFrames[i] - 1)
             cap = caps[i]
             cap.set(cv2.CAP_PROP_POS_FRAMES, int(frameIndex[i]))
             ret, image = cap.read()
@@ -67,12 +64,13 @@ while True:
             maxWidth = max(maxWidth, image.shape[1])
             maxHight = max(maxHight, image.shape[0])
 
-        print('max:', maxWidth, maxHight)
-        for i in range(len(images)):
-            image = images[i]
+        #print('max:', maxWidth, maxHight)
+        
+        images1 = []
+        for image in images:
             hight = int(image.shape[0])
             width = int(image.shape[1])
-            print('info:', hight, width)
+            #print('info:', hight, width)
             insertColL = int(math.floor(abs(maxWidth - width) / 2))
             insertColR = maxWidth - width - insertColL
             #image = np.concatenate((np.zeros((hight, insertColL, 3), dtype=int), image), axis=1) # col left
@@ -81,12 +79,13 @@ while True:
             insertRowDown = maxHight - hight - insertRowUp
             #image = np.concatenate((np.zeros((insertRowUp, maxWidth, 3), dtype=int), image), axis=0) # row up
             #image = np.concatenate((image, np.zeros((insertRowDown, maxWidth), 3, dtype=int)), axis=0) # row down
-            print(insertColL, ' ', insertColR, ' ', insertRowUp, ' ', insertRowDown, ' ')
-            image = cv2.copyMakeBorder(image, top=insertRowUp, bottom=insertRowDown, left=insertColL, right=insertColR, borderType= cv2.BORDER_CONSTANT, value=[0,0,0] )
-            print('shape', image.shape)
+            #print(insertColL, insertColR, insertRowUp, insertRowDown)
+            image = cv2.copyMakeBorder(image, top = insertRowUp, bottom = insertRowDown, left = insertColL,
+                right = insertColR, borderType = cv2.BORDER_CONSTANT, value = [0,0,0])
+            images1.append(image)
+            #print('shape', image.shape)
 
-        for im in images:
-            print('images:', im.shape)
+        images = images1
 
         if 4 == winNums:
             imageUp = np.hstack(tuple(images[0 : 2]))
@@ -94,15 +93,6 @@ while True:
             imageFull = np.vstack((imageUp, imageDown))
         else:
             imageFull = np.hstack(tuple(images))
-
-        #imageFull = temp #final image to display
-
-        #r = 1200.0 / imageFull.shape[1]
-        #dim = (1200, int(imageFull.shape[0] * r))
-        #imageFull = cv2.resize(imageFull, dim, interpolation = cv2.INTER_AREA)
-        #if imageFull.shape[0] > 600:
-            #imageFull = cv2.resize(imageFull, (500,500))
-            #controls = cv2.resize(controls, (imageFull.shape[1],25))
 
         height, width = imageFull.shape[0], imageFull.shape[1]
         widthNew = 1280
